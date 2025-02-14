@@ -1,3 +1,9 @@
 'bin/' 
 'obj/' 
 'node_modules/' 
+/src/backend/AIPoweredBlogPortfolio.API/.vs/AIPoweredBlogPortfolio.API
+/.vs/AI-Powered-Blog-Portfolio
+/.vs
+/src/backend/AIPoweredBlogPortfolio.API/AIPoweredBlogPortfolio.API/obj
+*.user
+*.http
