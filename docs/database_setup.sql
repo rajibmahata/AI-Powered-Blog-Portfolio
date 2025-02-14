@@ -9,19 +9,18 @@ CREATE TABLE Admins (
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
 -- Create BlogPosts table
 CREATE TABLE BlogPosts (
-    post_id INT PRIMARY KEY AUTO_INCREMENT,
-    title VARCHAR(255) NOT NULL,
-    content_html TEXT NOT NULL,
-    raw_content TEXT NOT NULL,
-    tags VARCHAR(255),
-    meta_description VARCHAR(255),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    admin_id INT,
-    FOREIGN KEY (admin_id) REFERENCES Admins(admin_id)
+    PostId INT PRIMARY KEY AUTO_INCREMENT,
+    Title VARCHAR(255) NOT NULL,
+    ContentHtml TEXT NOT NULL,
+    RawContent TEXT NOT NULL,
+    Tags VARCHAR(255),
+    MetaDescription VARCHAR(255),
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    AdminId INT,
+    FOREIGN KEY (AdminId) REFERENCES Admins(AdminId)
 );
 
 -- Create Visitors table
