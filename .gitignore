@@ -7,3 +7,6 @@
 /src/backend/AIPoweredBlogPortfolio.API/AIPoweredBlogPortfolio.API/obj
 *.user
 *.http
+/src/backend/AIPoweredBlogPortfolio.API/.vs/ProjectEvaluation
+/src/backend/AIPoweredBlogPortfolio.API/AIPoweredBlogPortfolio.API/bin
+/src/backend/AIPoweredBlogPortfolio.API/AIPoweredBlogPortfolio.API/.config
