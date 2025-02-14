@@ -1,5 +1,3 @@
--- SQL Script for setting up the AI-Powered Blog Portfolio database
-
 -- Create Admins table
 CREATE TABLE Admins (
     AdminId INT PRIMARY KEY AUTO_INCREMENT,
@@ -9,7 +7,6 @@ CREATE TABLE Admins (
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create BlogPosts table
 CREATE TABLE BlogPosts (
     PostId INT PRIMARY KEY AUTO_INCREMENT,
     Title VARCHAR(255) NOT NULL,
@@ -25,23 +22,26 @@ CREATE TABLE BlogPosts (
 
 -- Create Visitors table
 CREATE TABLE Visitors (
-    visitor_id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL,
-    message TEXT NOT NULL,
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    VisitorId INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100) NOT NULL,
+    Email VARCHAR(100) NOT NULL,
+    Message TEXT NOT NULL,
+    SubmittedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create AIProcessingLogs table
 CREATE TABLE AIProcessingLogs (
-    log_id INT PRIMARY KEY AUTO_INCREMENT,
-    post_id INT,
-    processing_type VARCHAR(50) NOT NULL,
-    processing_result TEXT NOT NULL,
-    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (post_id) REFERENCES BlogPosts(post_id)
+    LogId INT PRIMARY KEY AUTO_INCREMENT,
+    PostId INT,
+    ProcessingType VARCHAR(50) NOT NULL,
+    ProcessingResult TEXT NOT NULL,
+    ProcessedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (PostId) REFERENCES BlogPosts(PostId)
 );
 
--- Insert initial admin user
+
+
+
+
 INSERT INTO Admins (Username, PasswordHash, Email) VALUES 
 ('admin', '$2a$12$eImiTXuWVxfM37uY4JANjQ==', 'admin@example.com'); -- password: admin (hashed)
