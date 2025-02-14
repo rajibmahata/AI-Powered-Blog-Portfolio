@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.Filters;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -16,6 +18,7 @@ namespace AIPoweredBlogPortfolio.API.Controllers
     {
         private readonly IAdminService _adminService;
         private readonly ConfigValue _configValue;
+
         public AdminController(IAdminService adminService, IOptions<ConfigValue> configValue)
         {
             _adminService = adminService;
@@ -24,6 +27,8 @@ namespace AIPoweredBlogPortfolio.API.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
+        [SwaggerOperation(Summary = "Authenticates an admin and generates a JWT token")]
+        [SwaggerRequestExample(typeof(AdminLoginModel), typeof(AdminLoginModelExample))]
         public async Task<IActionResult> Authenticate([FromBody] AdminLoginModel model)
         {
             var admin = await _adminService.Authenticate(model.Username, model.Password);
@@ -37,6 +42,7 @@ namespace AIPoweredBlogPortfolio.API.Controllers
 
         [Authorize(Policy = "Admin")]
         [HttpGet]
+        [SwaggerOperation(Summary = "Gets all admins")]
         public async Task<IActionResult> GetAll()
         {
             var admins = await _adminService.GetAll();
@@ -45,6 +51,7 @@ namespace AIPoweredBlogPortfolio.API.Controllers
 
         [Authorize(Policy = "Admin")]
         [HttpGet("{id}")]
+        [SwaggerOperation(Summary = "Gets an admin by ID")]
         public async Task<IActionResult> GetById(int id)
         {
             var admin = await _adminService.GetById(id);
@@ -53,6 +60,8 @@ namespace AIPoweredBlogPortfolio.API.Controllers
 
         [Authorize(Policy = "Admin")]
         [HttpPost]
+        [SwaggerOperation(Summary = "Creates a new admin")]
+        [SwaggerRequestExample(typeof(AdminRegisterModel), typeof(AdminRegisterModelExample))]
         public async Task<IActionResult> Create([FromBody] AdminRegisterModel model)
         {
             var admin = new Admin
@@ -74,6 +83,8 @@ namespace AIPoweredBlogPortfolio.API.Controllers
 
         [Authorize(Policy = "Admin")]
         [HttpPut("{id}")]
+        [SwaggerOperation(Summary = "Updates an existing admin")]
+        [SwaggerRequestExample(typeof(AdminUpdateModel), typeof(AdminUpdateModelExample))]
         public async Task<IActionResult> Update(int id, [FromBody] AdminUpdateModel model)
         {
             var admin = await _adminService.GetById(id);
@@ -96,6 +107,7 @@ namespace AIPoweredBlogPortfolio.API.Controllers
 
         [Authorize(Policy = "Admin")]
         [HttpDelete("{id}")]
+        [SwaggerOperation(Summary = "Deletes an admin")]
         public async Task<IActionResult> Delete(int id)
         {
             await _adminService.Delete(id);
@@ -104,8 +116,6 @@ namespace AIPoweredBlogPortfolio.API.Controllers
 
         private string GenerateJwtToken(Admin admin)
         {
-            // Implement JWT token generation logic here.
-            // This is a placeholder and should be replaced with actual implementation.
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_configValue.JWTSecretKey); // Replace with your actual secret key
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -122,4 +132,46 @@ namespace AIPoweredBlogPortfolio.API.Controllers
             return tokenHandler.WriteToken(token);
         }
     }
+
+    // ... existing code ...
+
+    public class AdminLoginModelExample : IExamplesProvider<AdminLoginModel>
+    {
+        public AdminLoginModel GetExamples()
+        {
+            return new AdminLoginModel
+            {
+                Username = "admin1",
+                Password = "admin"
+            };
+        }
+    }
+
+    public class AdminRegisterModelExample : IExamplesProvider<AdminRegisterModel>
+    {
+        public AdminRegisterModel GetExamples()
+        {
+            return new AdminRegisterModel
+            {
+                Username = "newadmin",
+                Email = "newadmin@example.com",
+                Password = "password123"
+            };
+        }
+    }
+
+    public class AdminUpdateModelExample : IExamplesProvider<AdminUpdateModel>
+    {
+        public AdminUpdateModel GetExamples()
+        {
+            return new AdminUpdateModel
+            {
+                Username = "updatedadmin",
+                Email = "updatedadmin@example.com",
+                Password = "newpassword123"
+            };
+        }
+    }
 }
+
+

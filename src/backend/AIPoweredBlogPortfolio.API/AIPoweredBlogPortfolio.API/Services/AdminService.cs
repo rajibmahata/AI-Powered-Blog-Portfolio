@@ -1,5 +1,6 @@
 ﻿using AIPoweredBlogPortfolio.API.dbContext;
 using AIPoweredBlogPortfolio.API.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
 

@@ -4,6 +4,10 @@ using Microsoft.EntityFrameworkCore;
 using System.Configuration;
 using Microsoft.OpenApi.Models;
 using AIPoweredBlogPortfolio.API.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Swashbuckle.AspNetCore.Filters;
+using Swashbuckle.AspNetCore.Swagger;
+using AIPoweredBlogPortfolio.API.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,8 +26,9 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IBlogPostService, BlogPostService>();
 builder.Services.AddScoped<IVisitorService, VisitorService>();
 builder.Services.AddScoped<IAIProcessingLogService, AIProcessingLogService>();
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer("Bearer", options =>
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
     {
         var config = builder.Configuration.GetSection("Settings").Get<ConfigValue>();
         options.Authority = config.Authority;
@@ -32,10 +37,60 @@ builder.Services.AddAuthentication("Bearer")
             ValidateAudience = false
         };
     });
+//builder.Services.AddAuthentication("Bearer")
+//    .AddJwtBearer("Bearer", options =>
+//    {
+//        var config = builder.Configuration.GetSection("Settings").Get<ConfigValue>();
+//        options.Authority = config.Authority;
+//        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+//        {
+//            ValidateAudience = false
+//        };
+//    });
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Admin", policy => policy.RequireClaim("role", "admin"));
 });
+
+// Add Swagger services
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "AI-Powered Blog Portfolio API", Version = "v1" });
+    c.EnableAnnotations();
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+    c.ExampleFilters(); // Ensure this line is present
+});
+
+// Register the example providers
+builder.Services.AddSwaggerExamplesFromAssemblyOf<AdminLoginModelExample>();
+builder.Services.AddSwaggerExamplesFromAssemblyOf<AdminRegisterModelExample>();
+builder.Services.AddSwaggerExamplesFromAssemblyOf<AdminUpdateModelExample>();
+builder.Services.AddSwaggerExamplesFromAssemblyOf<BlogPostRequestExample>();
+builder.Services.AddSwaggerExamplesFromAssemblyOf<VisitorRequestExample>();
+builder.Services.AddSwaggerExamplesFromAssemblyOf<AIProcessingLogRequestExample>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -43,6 +98,15 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseDeveloperExceptionPage();
+    // Enable middleware to serve generated Swagger as a JSON endpoint.
+    app.UseSwagger();
+    // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
+    // specifying the Swagger JSON endpoint.
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "AI-Powered Blog Portfolio API V1");
+        c.RoutePrefix = string.Empty;  // Set Swagger UI at the app's root
+    });
 }
 
 app.UseHttpsRedirection();
@@ -51,6 +115,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.UseRouting();
-
 
 app.Run();
