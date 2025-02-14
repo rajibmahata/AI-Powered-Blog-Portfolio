@@ -44,5 +44,5 @@ CREATE TABLE AIProcessingLogs (
 );
 
 -- Insert initial admin user
-INSERT INTO Admins (username, password_hash, email) VALUES 
+INSERT INTO Admins (Username, PasswordHash, Email) VALUES 
 ('admin', '$2a$12$eImiTXuWVxfM37uY4JANjQ==', 'admin@example.com'); -- password: admin (hashed)
