@@ -1,0 +1,61 @@
+﻿@page "/admin/login"
+@using AIPoweredBlogPortfolio.Admin.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IHttpClientFactory HttpClientFactory
+
+<h3>Admin Login</h3>
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="username">Username:</label>
+        <InputText id="username" @bind-Value="loginModel.Username" />
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <InputText id="password" @bind-Value="loginModel.Password" type="password" />
+    </div>
+    <button type="submit">Login</button>
+</EditForm>
+
+@if (loginFailed)
+{
+    <p style="color:red;">Login failed. Please try again.</p>
+}
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+    private bool loginFailed = false;
+
+    private async Task HandleLogin()
+    {
+        // Call the API to validate the user
+        var isAuthenticated = await AuthenticateUser(loginModel);
+        if (isAuthenticated)
+        {
+            await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(loginModel.Username);
+            Navigation.NavigateTo("/admin");
+        }
+        else
+        {
+            loginFailed = true;
+        }
+    }
+
+    private async Task<bool> AuthenticateUser(LoginModel loginModel)
+    {
+        var client = HttpClientFactory.CreateClient("API");
+        var response = await client.PostAsJsonAsync("api/admin/authenticate", loginModel);
+        return response.IsSuccessStatusCode;
+    }
+
+    public class LoginModel
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+}
