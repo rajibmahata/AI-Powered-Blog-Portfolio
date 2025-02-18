@@ -1,21 +1,19 @@
 ﻿@inherits LayoutComponentBase
 
-<MudThemeProvider>
-    <MudLayout>
-        <MudAppBar Color="Color.Primary" Elevation="4">
-            <MudText Typo="Typo.h6">Admin Dashboard</MudText>
-        </MudAppBar>
+<MudLayout>
+    <MudAppBar Color="Color.Primary" Elevation="4">
+        <MudText Typo="Typo.h6">Admin Dashboard</MudText>
+    </MudAppBar>
 
-        <MudDrawer Open="true" ClipMode="DrawerClipMode.Always">
-            <MudNavMenu>
-                <MudNavLink Href="" Match="NavLinkMatch.All">Home</MudNavLink>
-                <MudNavLink Href="users">Users</MudNavLink>
-                <MudNavLink Href="settings">Settings</MudNavLink>
-            </MudNavMenu>
-        </MudDrawer>
+    <MudDrawer Open="true" ClipMode="DrawerClipMode.Always">
+        <MudNavMenu>
+            <MudNavLink Href="" Match="NavLinkMatch.All">Home</MudNavLink>
+            <MudNavLink Href="users">Users</MudNavLink>
+            <MudNavLink Href="settings">Settings</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
 
-        <MudMainContent>
-            @Body
-        </MudMainContent>
-    </MudLayout>
-</MudThemeProvider>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+</MudLayout>
