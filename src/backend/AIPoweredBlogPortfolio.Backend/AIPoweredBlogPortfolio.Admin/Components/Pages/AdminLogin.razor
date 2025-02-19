@@ -1,31 +1,51 @@
-﻿@page "/admin/login"
+﻿@page "/login"
 @using AIPoweredBlogPortfolio.Admin.Services
 @using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IHttpClientFactory HttpClientFactory
+@using System.ComponentModel.DataAnnotations
 
-<h3>Admin Login</h3>
+<HeadContent>
+    <link href="@Assets["login.css"]" rel="stylesheet" />
+</HeadContent>
 
-<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<div class="d-flex align-items-center justify-content-center vh-100">
+    <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%;">
+        <div class="card-body">
+            <h4 class="card-title text-center mb-4">Admin Login</h4>
 
-    <div>
-        <label for="username">Username:</label>
-        <InputText id="username" @bind-Value="loginModel.Username" />
+            <EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="@("loginForm")">
+                <DataAnnotationsValidator />
+              @*   <ValidationSummary /> *@
+
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <InputText id="username" @bind-Value="loginModel.Username" class="form-control" />
+                    <ValidationMessage For="@(() => loginModel.Username)" />
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" />
+                    <ValidationMessage For="@(() => loginModel.Password)" />
+                </div>
+
+                <div class="form-check mb-3">
+                    <InputCheckbox id="rememberMe" @bind-Value="loginModel.RememberMe" class="form-check-input" />
+                    <label for="rememberMe" class="form-check-label">Remember Me</label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Login</button>
+            </EditForm>
+
+            @if (loginFailed)
+            {
+                <div class="text-danger mt-3">Login failed. Please try again.</div>
+            }
+        </div>
     </div>
-    <div>
-        <label for="password">Password:</label>
-        <InputText id="password" @bind-Value="loginModel.Password" type="password" />
-    </div>
-    <button type="submit">Login</button>
-</EditForm>
-
-@if (loginFailed)
-{
-    <p style="color:red;">Login failed. Please try again.</p>
-}
+</div>
 
 @code {
     private LoginModel loginModel = new LoginModel();
@@ -33,12 +53,12 @@
 
     private async Task HandleLogin()
     {
-        // Call the API to validate the user
+        Console.WriteLine("HandleLogin called");
         var isAuthenticated = await AuthenticateUser(loginModel);
         if (isAuthenticated)
         {
             await ((CustomAuthenticationStateProvider)AuthenticationStateProvider).MarkUserAsAuthenticated(loginModel.Username);
-            Navigation.NavigateTo("/admin");
+            Navigation.NavigateTo("/");
         }
         else
         {
@@ -55,7 +75,12 @@
 
     public class LoginModel
     {
+        [Required(ErrorMessage = "Username is required")]
         public string Username { get; set; }
+
+        [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; }
+
+        public bool RememberMe { get; set; }
     }
 }

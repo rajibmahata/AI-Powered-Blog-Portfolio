@@ -1,19 +1,43 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
 
-<MudLayout>
-    <MudAppBar Color="Color.Primary" Elevation="4">
-        <MudText Typo="Typo.h6">Admin Dashboard</MudText>
-    </MudAppBar>
+<div class="container-fluid">
+    <AuthorizeView>
+        <Authorized>
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <a class="navbar-brand" href="#">Admin Dashboard</a>
+            </nav>
+        </Authorized>
+    </AuthorizeView>
 
-    <MudDrawer Open="true" ClipMode="DrawerClipMode.Always">
-        <MudNavMenu>
-            <MudNavLink Href="" Match="NavLinkMatch.All">Home</MudNavLink>
-            <MudNavLink Href="users">Users</MudNavLink>
-            <MudNavLink Href="settings">Settings</MudNavLink>
-        </MudNavMenu>
-    </MudDrawer>
+    <div class="row">
+        <AuthorizeView>
+            <Authorized>
+                <div class="col-md-2 bg-light sidebar">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">Home</NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="users">Users</NavLink>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="settings">Settings</NavLink>
+                        </li>
+                    </ul>
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
-    <MudMainContent>
-        @Body
-    </MudMainContent>
-</MudLayout>
+        <div class="col-md-10">
+            @Body
+        </div>
+    </div>
+</div>
+
+<style>
+    .sidebar {
+        height: 100vh;
+        padding-top: 1rem;
+    }
+</style>

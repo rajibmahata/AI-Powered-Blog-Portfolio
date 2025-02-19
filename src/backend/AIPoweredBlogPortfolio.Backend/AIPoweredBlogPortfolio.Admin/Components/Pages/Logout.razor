@@ -1,0 +1,12 @@
+﻿   @page "/logout"
+@using AIPoweredBlogPortfolio.Admin.Services
+   @inject CustomAuthenticationStateProvider AuthenticationStateProvider
+   @inject NavigationManager Navigation
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await AuthenticationStateProvider.MarkUserAsLoggedOut();
+        Navigation.NavigateTo("/login");
+    }
+   }

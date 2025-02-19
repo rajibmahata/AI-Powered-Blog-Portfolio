@@ -1,5 +1,6 @@
 using AIPoweredBlogPortfolio.Admin.Components;
 using AIPoweredBlogPortfolio.Admin.Services;
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -10,18 +11,29 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.Services.AddMudServices();
+
+builder.Services.AddLogging(config =>
+{
+    config.AddConsole();
+    // You can add other logging providers here, such as Debug, EventSource, etc.
+});
+
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie();
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/admin/login";
+    });
 
-builder.Services.AddAuthorizationCore();
+builder.Services.AddCascadingAuthenticationState();
 
-builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthenticationStateProvider>());
 
 builder.Services.AddHttpClient("API", client =>
 {
-    client.BaseAddress = new Uri("https://your-api-url");
+    client.BaseAddress = new Uri("https://localhost:7133");
 });
 
 var app = builder.Build();
