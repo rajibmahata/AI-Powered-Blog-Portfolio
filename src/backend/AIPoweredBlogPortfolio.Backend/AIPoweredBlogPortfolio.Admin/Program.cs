@@ -4,7 +4,7 @@ using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
-using MudBlazor.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +18,12 @@ builder.Services.AddLogging(config =>
     // You can add other logging providers here, such as Debug, EventSource, etc.
 });
 
-
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
         options.LoginPath = "/admin/login";
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 builder.Services.AddCascadingAuthenticationState();

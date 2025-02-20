@@ -17,7 +17,7 @@
 
             <EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="@("loginForm")">
                 <DataAnnotationsValidator />
-              @*   <ValidationSummary /> *@
+                <ValidationSummary />
 
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>
@@ -69,7 +69,7 @@
     private async Task<bool> AuthenticateUser(LoginModel loginModel)
     {
         var client = HttpClientFactory.CreateClient("API");
-        var response = await client.PostAsJsonAsync("api/admin/authenticate", loginModel);
+        var response = await client.PostAsJsonAsync("api/admin/login", loginModel);
         return response.IsSuccessStatusCode;
     }
 
