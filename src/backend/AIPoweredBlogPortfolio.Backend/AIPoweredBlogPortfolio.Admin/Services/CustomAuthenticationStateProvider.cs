@@ -1,5 +1,4 @@
-﻿using Blazored.LocalStorage;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -8,52 +7,48 @@ namespace AIPoweredBlogPortfolio.Admin.Services
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
         private readonly AuthenticationState anonymous = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-        private readonly ILocalStorageService _localStorageService;
         private bool _isInitialized;
+        private string _savedUsername;
 
-        public CustomAuthenticationStateProvider(ILocalStorageService localStorageService)
-        {
-            _localStorageService = localStorageService;
-        }
-
-        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+        public override Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             if (!_isInitialized)
             {
-                return anonymous;
+                return Task.FromResult(anonymous);
             }
 
-            var savedUsername = await _localStorageService.GetItemAsync<string>("username");
-
-            if (string.IsNullOrEmpty(savedUsername))
+            if (string.IsNullOrEmpty(_savedUsername))
             {
-                return anonymous;
+                return Task.FromResult(anonymous);
             }
 
-            var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, savedUsername) }, "apiauth"));
-            return new AuthenticationState(authenticatedUser);
+            var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, _savedUsername) }, "apiauth"));
+            return Task.FromResult(new AuthenticationState(authenticatedUser));
         }
 
-        public async Task InitializeAsync()
+        public Task InitializeAsync()
         {
-            var authState = await GetAuthenticationStateAsync();
-            NotifyAuthenticationStateChanged(Task.FromResult(authState));
+            var authState = GetAuthenticationStateAsync();
+            NotifyAuthenticationStateChanged(authState);
             _isInitialized = true;
+            return Task.CompletedTask;
         }
 
-        public async Task MarkUserAsAuthenticated(string username)
+        public Task MarkUserAsAuthenticated(string username)
         {
-            await _localStorageService.SetItemAsync("username", username);
+            _savedUsername = username;
             var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }, "apiauth"));
             var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
             NotifyAuthenticationStateChanged(authState);
+            return Task.CompletedTask;
         }
 
-        public async Task MarkUserAsLoggedOut()
+        public Task MarkUserAsLoggedOut()
         {
-            await _localStorageService.RemoveItemAsync("username");
+            _savedUsername = null;
             var authState = Task.FromResult(anonymous);
             NotifyAuthenticationStateChanged(authState);
+            return Task.CompletedTask;
         }
 
         public Task UpdateAuthenticationState(ClaimsPrincipal user)

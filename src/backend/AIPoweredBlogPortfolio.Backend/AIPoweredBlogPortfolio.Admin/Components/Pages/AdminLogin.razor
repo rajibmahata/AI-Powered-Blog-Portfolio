@@ -48,8 +48,16 @@
 </div>
 
 @code {
-    private LoginModel loginModel = new LoginModel();
+    [SupplyParameterFromForm]
+    private LoginModel loginModel { get; set; } = new LoginModel();
     private bool loginFailed = false;
+    private bool isDisposed = false;
+
+    protected override void OnInitialized()
+    {
+        isDisposed = false;
+    }
+
 
     private async Task HandleLogin()
     {
@@ -82,5 +90,13 @@
         public string Password { get; set; }
 
         public bool RememberMe { get; set; }
+    }
+
+    public void Dispose()
+    {
+        if (!isDisposed)
+        {
+            isDisposed = true;
+        }
     }
 }

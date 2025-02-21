@@ -1,6 +1,5 @@
 using AIPoweredBlogPortfolio.Admin.Components;
 using AIPoweredBlogPortfolio.Admin.Services;
-using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -26,13 +25,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
+builder.Services.AddAuthorization();
 builder.Services.AddCascadingAuthenticationState();
 
-builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<AuthenticationStateProvider>(provider => provider.GetRequiredService<CustomAuthenticationStateProvider>());
 
-builder.Services.AddHttpClient("API", client =>
+builder.Services.AddHttpClient<AdminClient>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:7133");
 });
