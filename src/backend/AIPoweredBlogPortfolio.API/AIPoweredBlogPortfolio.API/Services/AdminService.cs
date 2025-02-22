@@ -25,6 +25,7 @@ namespace AIPoweredBlogPortfolio.API.Services
             if (admin == null)
                 return null;
 
+        
             if (!VerifyPasswordHash(password, admin.PasswordHash))
                 return null;
 
@@ -98,16 +99,25 @@ namespace AIPoweredBlogPortfolio.API.Services
         {
             using (var hmac = new HMACSHA512())
             {
-                passwordHash = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(password)));
+                var salt = hmac.Key;
+                var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+                passwordHash = Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
             }
         }
 
         private static bool VerifyPasswordHash(string password, string storedHash)
         {
-            using (var hmac = new HMACSHA512())
+            var parts = storedHash.Split(':');
+            if (parts.Length != 2)
+                return false;
+
+            var salt = Convert.FromBase64String(parts[0]);
+            var storedHashBytes = Convert.FromBase64String(parts[1]);
+
+            using (var hmac = new HMACSHA512(salt))
             {
                 var computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return Convert.ToBase64String(computedHash) == storedHash;
+                return computedHash.SequenceEqual(storedHashBytes);
             }
         }
     }

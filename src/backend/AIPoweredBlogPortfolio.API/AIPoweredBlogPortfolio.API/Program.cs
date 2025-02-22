@@ -8,8 +8,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Swashbuckle.AspNetCore.Filters;
 using Swashbuckle.AspNetCore.Swagger;
 using AIPoweredBlogPortfolio.API.Controllers;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add builder.Services to the container.
 
@@ -32,25 +37,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     {
         var config = builder.Configuration.GetSection("Settings").Get<ConfigValue>();
         options.Authority = config.Authority;
-        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        var IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config.JWTSecretKey));
+        options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateAudience = false
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = config.issuer,
+            ValidAudience = config.audience,
+            IssuerSigningKey = IssuerSigningKey
         };
     });
-//builder.Services.AddAuthentication("Bearer")
-//    .AddJwtBearer("Bearer", options =>
-//    {
-//        var config = builder.Configuration.GetSection("Settings").Get<ConfigValue>();
-//        options.Authority = config.Authority;
-//        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-//        {
-//            ValidateAudience = false
-//        };
-//    });
+
+
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Admin", policy => policy.RequireClaim("role", "admin"));
+    options.AddPolicy("Admin", policy => policy.RequireClaim(ClaimTypes.Role, "admin"));
 });
+
 
 // Add Swagger services
 builder.Services.AddSwaggerGen(c =>
@@ -110,10 +115,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.UseRouting();
 
 app.Run();

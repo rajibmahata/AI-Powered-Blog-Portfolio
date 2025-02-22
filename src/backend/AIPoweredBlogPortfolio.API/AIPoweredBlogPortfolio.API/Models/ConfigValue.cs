@@ -2,7 +2,9 @@
 {
     public class ConfigValue
     {
-        public string JWTSecretKey { get; set; }
-        public string Authority { get; set; }
+        public required string JWTSecretKey { get; set; }
+        public required string Authority { get; set; }
+        public required string issuer { get; set; }
+        public required string audience { get; set; }
     }
 }

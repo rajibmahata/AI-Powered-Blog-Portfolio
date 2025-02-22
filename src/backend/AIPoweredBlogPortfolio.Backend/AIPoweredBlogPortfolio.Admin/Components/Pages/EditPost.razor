@@ -1,0 +1,86 @@
+﻿@page "/posts/edit"
+@using AIPoweredBlogPortfolio.Admin.Models
+@using Microsoft.AspNetCore.Authorization
+@* @attribute [Authorize(Roles = "Admin,Editor")] *@
+
+<div class="card">
+    <div class="card-header">
+        <h5>Blog Post Editor</h5>
+    </div>
+    <div class="card-body">
+        <EditForm Model="@BlogPost" OnValidSubmit="SavePost">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <div class="input-group">
+                            <InputText class="form-control" @bind-Value="BlogPost.Title" />
+                            <button type="button" class="btn btn-outline-secondary" @onclick="GenerateTitle">
+                                <i class="bi bi-magic"></i> AI Generate
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Content</label>
+                        <InputTextArea class="form-control" rows="10" @bind-Value="BlogPost.RawContent" />
+                        <button class="btn btn-link" @onclick="RefineContent">
+                            <i class="bi bi-spellcheck"></i> AI Refine
+                        </button>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            SEO Optimization
+                        </div>
+                        <div class="card-body">
+                            <button class="btn btn-sm btn-info mb-2" @onclick="GenerateSeoKeywords">
+                                <i class="bi bi-lightbulb"></i> Suggest Keywords
+                            </button>
+                            <div class="seo-keywords">
+                                @foreach (var keyword in SeoKeywords)
+                                {
+                                    <span class="badge bg-primary me-1">@keyword</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Other post settings -->
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success">Save Post</button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    private BlogPostRequest BlogPost { get; set; } = new();
+    private List<string> SeoKeywords = new();
+
+    private async Task GenerateTitle()
+    {
+        // Call AI service to generate title
+       // BlogPost.Title = await AiService.GenerateTitle(BlogPost.Content);
+    }
+
+    private async Task RefineContent()
+    {
+        // Call AI service to refine content
+      //  BlogPost.Content = await AiService.RefineContent(BlogPost.Content);
+    }
+
+    private async Task GenerateSeoKeywords()
+    {
+        // Call AI service to generate SEO keywords
+     //   SeoKeywords = await AiService.GenerateSeoKeywords(BlogPost.Content);
+    }
+
+    private void SavePost()
+    {
+        // Save post logic
+    }
+}

@@ -1,0 +1,172 @@
+﻿@page "/users"
+@using AIPoweredBlogPortfolio.Admin.Models
+@using AIPoweredBlogPortfolio.Admin.Services
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@inject LocalStorageHelper localStorageHelper
+@inject AdminClient AdminClient
+
+<h3>Admin User Management</h3>
+<button class="btn btn-primary mb-3" @onclick="ShowAddModal">Add New Admin</button>
+
+@if (admins == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var admin in admins)
+            {
+                <tr>
+                    <td>@admin.Username</td>
+                    <td>@admin.Email</td>
+                    <td>@admin.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" @onclick="() => ShowEditModal(admin)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteAdmin(admin)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<!-- Add Admin Modal -->
+<AdminEditModal ShowModal="@showAddModal" 
+OnClose="@(() => showAddModal = false)" 
+OnSave="@HandleAddAdmin" 
+IsNew="true" />
+
+<!-- Edit Admin Modal -->
+<AdminEditModal ShowModal="@showEditModal" 
+OnClose="@(() => showEditModal = false)" 
+OnSave="@HandleUpdateAdmin" 
+IsNew="false" 
+SelectedAdmin="@selectedAdmin" />
+
+@code {
+    private List<AdminViewModel> admins;
+    private bool showAddModal;
+    private bool showEditModal;
+    private AdminViewModel selectedAdmin;
+    private bool _hasRendered = false;
+    private string token { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _hasRendered = true;
+            token = await localStorageHelper.GetItemAsync<string>("authToken");
+            await LoadAdmins(token);
+            StateHasChanged(); // Trigger re-render
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (_hasRendered) // Ensure JavaScript interop is available
+        {
+           
+            await LoadAdmins(token);
+        }
+        
+    }
+
+    private async Task LoadAdmins(string token)
+    {
+        try
+        {
+            IEnumerable<AdminViewModel> adminViewModels = await AdminClient.GetAllAdminsAsync(token);
+            admins = adminViewModels.ToList();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading admins: {ex.Message}");
+        }
+    }
+
+    private void ShowAddModal() => showAddModal = true;
+
+    private void ShowEditModal(AdminViewModel admin)
+    {
+        selectedAdmin = admin;
+        showEditModal = true;
+    }
+
+    private async Task HandleAddAdmin(AdminViewModel newAdmin)
+    {
+        try
+        {
+            var token = await localStorageHelper.GetItemAsync<string>("authToken");
+            var response = await AdminClient.CreateAdminAsync(new AdminRegisterRequest
+            {
+                Username = newAdmin.Username,
+                Email = newAdmin.Email,
+                Password = newAdmin.Password // Assuming PasswordHash is used for password input
+            },  token);
+            if (response != null)
+            {
+                
+                await LoadAdmins(token);
+                showAddModal = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error adding admin: {ex.Message}");
+        }
+    }
+
+    private async Task HandleUpdateAdmin(AdminViewModel updatedAdmin)
+    {
+        try
+        {
+            var token = await localStorageHelper.GetItemAsync<string>("authToken");
+            var response = await AdminClient.UpdateAdminAsync(updatedAdmin.AdminId, new AdminUpdateRequest
+            {
+                Username = updatedAdmin.Username,
+                Email = updatedAdmin.Email,
+                Password = updatedAdmin.Password // Assuming PasswordHash is used for password input
+            },token);
+            if (response != null)
+            {
+               
+                await LoadAdmins(token);
+                showEditModal = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error updating admin: {ex.Message}");
+        }
+    }
+
+    private async Task DeleteAdmin(AdminViewModel admin)
+    {
+        if (await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this admin?"))
+        {
+            try
+            {
+                var token = await localStorageHelper.GetItemAsync<string>("authToken");
+                await AdminClient.DeleteAdminAsync(admin.AdminId, token);
+                
+                await LoadAdmins(token);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting admin: {ex.Message}");
+            }
+        }
+    }
+}

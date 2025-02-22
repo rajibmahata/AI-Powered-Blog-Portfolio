@@ -1,4 +1,9 @@
 using AIPoweredBlogPortfolio.Admin.Models;
+using Blazored.LocalStorage;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 
 namespace AIPoweredBlogPortfolio.Admin.Services
 {
@@ -6,21 +11,31 @@ namespace AIPoweredBlogPortfolio.Admin.Services
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger<AdminClient> _logger;
+        private readonly ILocalStorageService _localStorage;
 
-        public AdminClient(HttpClient httpClient, ILogger<AdminClient> logger)
+        public AdminClient(HttpClient httpClient, ILogger<AdminClient> logger, ILocalStorageService localStorage)
         {
             _httpClient = httpClient;
             _logger = logger;
+            _localStorage = localStorage;
         }
 
-        public async Task<string> LoginAsync(AdminLoginRequest loginRequest)
+        private async Task AddJwtTokenAsync(string token)
+        {
+            if (!string.IsNullOrEmpty(token))
+            {
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+        }
+
+        public async Task<AdminLoginResponse> LoginAsync(AdminLoginRequest loginRequest)
         {
             try
             {
                 var response = await _httpClient.PostAsJsonAsync("api/admin/login", loginRequest);
                 response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync<LoginResult>();
-                return result.Token;
+                var result = await response.Content.ReadFromJsonAsync<AdminLoginResponse>();
+                return result;
             }
             catch (Exception ex)
             {
@@ -29,13 +44,14 @@ namespace AIPoweredBlogPortfolio.Admin.Services
             }
         }
 
-        public async Task<IEnumerable<Admin>> GetAllAdminsAsync()
+        public async Task<IEnumerable<AdminViewModel>> GetAllAdminsAsync(string token)
         {
             try
             {
+                await AddJwtTokenAsync(token);
                 var response = await _httpClient.GetAsync("api/admin");
                 response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<IEnumerable<Admin>>();
+                return await response.Content.ReadFromJsonAsync<IEnumerable<AdminViewModel>>();
             }
             catch (Exception ex)
             {
@@ -44,13 +60,14 @@ namespace AIPoweredBlogPortfolio.Admin.Services
             }
         }
 
-        public async Task<Admin> GetAdminByIdAsync(int id)
+        public async Task<AdminRegisterResponse> GetAdminByIdAsync(int id, string token)
         {
             try
             {
+                await AddJwtTokenAsync(token);
                 var response = await _httpClient.GetAsync($"api/admin/{id}");
                 response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<Admin>();
+                return await response.Content.ReadFromJsonAsync<AdminRegisterResponse>();
             }
             catch (Exception ex)
             {
@@ -59,13 +76,14 @@ namespace AIPoweredBlogPortfolio.Admin.Services
             }
         }
 
-        public async Task<Admin> CreateAdminAsync(AdminRegisterRequest registerRequest)
+        public async Task<AdminRegisterResponse> CreateAdminAsync(AdminRegisterRequest registerRequest, string token)
         {
             try
             {
+                await AddJwtTokenAsync(token);
                 var response = await _httpClient.PostAsJsonAsync("api/admin", registerRequest);
                 response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<Admin>();
+                return await response.Content.ReadFromJsonAsync<AdminRegisterResponse>();
             }
             catch (Exception ex)
             {
@@ -74,13 +92,14 @@ namespace AIPoweredBlogPortfolio.Admin.Services
             }
         }
 
-        public async Task<Admin> UpdateAdminAsync(int id, AdminUpdateRequest updateRequest)
+        public async Task<AdminRegisterResponse> UpdateAdminAsync(int id, AdminUpdateRequest updateRequest, string token)
         {
             try
             {
+                await AddJwtTokenAsync(token);
                 var response = await _httpClient.PutAsJsonAsync($"api/admin/{id}", updateRequest);
                 response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<Admin>();
+                return await response.Content.ReadFromJsonAsync<AdminRegisterResponse>();
             }
             catch (Exception ex)
             {
@@ -89,10 +108,11 @@ namespace AIPoweredBlogPortfolio.Admin.Services
             }
         }
 
-        public async Task DeleteAdminAsync(int id)
+        public async Task DeleteAdminAsync(int id, string token)
         {
             try
             {
+                await AddJwtTokenAsync(token);
                 var response = await _httpClient.DeleteAsync($"api/admin/{id}");
                 response.EnsureSuccessStatusCode();
             }
@@ -101,11 +121,6 @@ namespace AIPoweredBlogPortfolio.Admin.Services
                 _logger.LogError(ex, $"Error occurred while deleting admin with ID: {id}.");
                 throw;
             }
-        }
-
-        private class LoginResult
-        {
-            public string Token { get; set; }
         }
     }
 }

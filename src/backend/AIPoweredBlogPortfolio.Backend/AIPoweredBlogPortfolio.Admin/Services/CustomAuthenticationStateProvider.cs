@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
+﻿using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -6,56 +9,115 @@ namespace AIPoweredBlogPortfolio.Admin.Services
 {
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
-        private readonly AuthenticationState anonymous = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-        private bool _isInitialized;
-        private string _savedUsername;
+        private readonly AuthenticationState _anonymousState = new(new ClaimsPrincipal(new ClaimsIdentity()));
+        private readonly ILocalStorageService _localStorage;
+        private readonly ILogger<CustomAuthenticationStateProvider> _logger;
+        private bool _jsInteropReady = false;
 
-        public override Task<AuthenticationState> GetAuthenticationStateAsync()
+        public CustomAuthenticationStateProvider(ILocalStorageService localStorage, ILogger<CustomAuthenticationStateProvider> logger)
         {
-            if (!_isInitialized)
+            _localStorage = localStorage;
+            _logger = logger;
+        }
+
+        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+        {
+            if (!_jsInteropReady)
             {
-                return Task.FromResult(anonymous);
+                return _anonymousState; // JS Interop is not available yet.
             }
 
-            if (string.IsNullOrEmpty(_savedUsername))
+            try
             {
-                return Task.FromResult(anonymous);
+                var token = await _localStorage.GetItemAsync<string>("authToken");
+
+                if (string.IsNullOrWhiteSpace(token))
+                {
+                    return _anonymousState; // No token → Not authenticated
+                }
+
+                var user = GetUserFromJwtToken(token);
+                return new AuthenticationState(user);
             }
-
-            var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, _savedUsername) }, "apiauth"));
-            return Task.FromResult(new AuthenticationState(authenticatedUser));
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while retrieving authentication state.");
+                return _anonymousState;
+            }
         }
 
-        public Task InitializeAsync()
+        public async Task InitializeAsync()
         {
-            var authState = GetAuthenticationStateAsync();
-            NotifyAuthenticationStateChanged(authState);
-            _isInitialized = true;
-            return Task.CompletedTask;
+            _jsInteropReady = true; // Now JS interop is available
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
-        public Task MarkUserAsAuthenticated(string username)
+        private ClaimsPrincipal GetUserFromJwtToken(string token)
         {
-            _savedUsername = username;
-            var authenticatedUser = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username) }, "apiauth"));
-            var authState = Task.FromResult(new AuthenticationState(authenticatedUser));
-            NotifyAuthenticationStateChanged(authState);
-            return Task.CompletedTask;
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var jwtToken = handler.ReadJwtToken(token);
+
+                var identity = new ClaimsIdentity(jwtToken.Claims, "jwt");
+
+                if (!identity.HasClaim(c => c.Type == ClaimTypes.Name))
+                {
+                    var username = jwtToken.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value
+                                   ?? jwtToken.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
+                    if (!string.IsNullOrEmpty(username))
+                    {
+                        identity.AddClaim(new Claim(ClaimTypes.Name, username));
+                    }
+                }
+                return new ClaimsPrincipal(identity);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Invalid JWT Token.");
+                return new ClaimsPrincipal(new ClaimsIdentity()); // Invalid token → Not authenticated
+            }
         }
 
-        public Task MarkUserAsLoggedOut()
+        public async Task MarkUserAsAuthenticated(string token)
         {
-            _savedUsername = null;
-            var authState = Task.FromResult(anonymous);
-            NotifyAuthenticationStateChanged(authState);
-            return Task.CompletedTask;
+            try
+            {
+                if (!_jsInteropReady)
+                {
+                    await InitializeAsync(); // Ensure LocalStorage is available
+                }
+
+                await _localStorage.SetItemAsync("authToken", token);
+
+                if (!_jsInteropReady)
+                    return;
+
+                var user = GetUserFromJwtToken(token);
+                var authState = new AuthenticationState(user);
+                NotifyAuthenticationStateChanged(Task.FromResult(authState));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error marking user as authenticated.");
+            }
         }
 
-        public Task UpdateAuthenticationState(ClaimsPrincipal user)
+        public async Task MarkUserAsLoggedOut()
         {
-            var authState = Task.FromResult(new AuthenticationState(user));
-            NotifyAuthenticationStateChanged(authState);
-            return Task.CompletedTask;
+            try
+            {
+                await _localStorage.RemoveItemAsync("authToken");
+
+                if (!_jsInteropReady)
+                    return;
+
+                NotifyAuthenticationStateChanged(Task.FromResult(_anonymousState));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error marking user as logged out.");
+            }
         }
     }
 }

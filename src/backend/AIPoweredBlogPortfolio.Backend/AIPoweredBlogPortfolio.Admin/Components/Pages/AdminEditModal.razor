@@ -1,0 +1,68 @@
+﻿@using AIPoweredBlogPortfolio.Admin.Models
+@using System.Security.Cryptography
+@using System.Text
+<div class="modal-body">
+    <EditForm Model="@CurrentAdmin" OnValidSubmit="@HandleSubmit">
+        <DataAnnotationsValidator />
+        <div class="mb-3">
+            <label class="form-label">Username</label>
+            <InputText class="form-control" @bind-Value="CurrentAdmin.Username" />
+            <ValidationMessage For="@(() => CurrentAdmin.Username)" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText class="form-control" @bind-Value="CurrentAdmin.Email" />
+            <ValidationMessage For="@(() => CurrentAdmin.Email)" />
+        </div>
+        @if (IsNew)
+        {
+            <div class="mb-3">
+                <label class="form-label">Password</label>
+                <InputText type="password" class="form-control" @bind-Value="password" />
+            </div>
+        }
+        <button type="submit" class="btn btn-primary">Save</button>
+    </EditForm>
+</div>
+
+@code {
+    [Parameter] public bool ShowModal { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<AdminViewModel> OnSave { get; set; }
+    [Parameter] public bool IsNew { get; set; }
+    [Parameter] public AdminViewModel SelectedAdmin { get; set; }
+
+    private AdminViewModel CurrentAdmin = new();
+    private string password = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        if (!IsNew && SelectedAdmin != null)
+        {
+            CurrentAdmin = new AdminViewModel
+                {
+                    AdminId = SelectedAdmin.AdminId,
+                    Username = SelectedAdmin.Username,
+                    Email = SelectedAdmin.Email
+                };
+        }
+        else
+        {
+            CurrentAdmin = new AdminViewModel();
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        if (IsNew)
+        {
+            using (var hmac = new HMACSHA512())
+            {
+                var salt = hmac.Key;
+                var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+                CurrentAdmin.Password = Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
+            }
+        }
+        await OnSave.InvokeAsync(CurrentAdmin);
+    }
+}

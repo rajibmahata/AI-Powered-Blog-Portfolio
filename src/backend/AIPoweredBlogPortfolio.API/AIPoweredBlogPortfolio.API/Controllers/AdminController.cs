@@ -117,20 +117,23 @@ namespace AIPoweredBlogPortfolio.API.Controllers
         private string GenerateJwtToken(Admin admin)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_configValue.JWTSecretKey); // Replace with your actual secret key
+            var key = Encoding.ASCII.GetBytes(_configValue.JWTSecretKey);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.Name, admin.Username),
-                    new Claim(ClaimTypes.Role, "admin")
-                }),
+            new Claim(ClaimTypes.Name, admin.Username),
+            new Claim(ClaimTypes.Role, "admin")
+        }),
                 Expires = DateTime.UtcNow.AddHours(1),
+                Audience = _configValue.audience,
+                Issuer = _configValue.issuer,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
     }
 
     // ... existing code ...
