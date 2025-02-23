@@ -1,12 +1,28 @@
-﻿   @page "/logout"
+﻿@page "/logout"
 @using AIPoweredBlogPortfolio.Admin.Services
-   @inject CustomAuthenticationStateProvider AuthenticationStateProvider
-   @inject NavigationManager Navigation
+@using Microsoft.AspNetCore.Components.Authorization
+@inject CustomAuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
 
 @code {
+    private bool _hasRendered = false;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _hasRendered = true;
+            await AuthenticationStateProvider.InitializeAsync(); // Notify Blazor that authentication state is ready
+            await AuthenticationStateProvider.MarkUserAsLoggedOut();
+            StateHasChanged(); // Trigger re-render
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
-        await AuthenticationStateProvider.MarkUserAsLoggedOut();
-        Navigation.NavigateTo("/login");
+        if (_hasRendered)
+        {
+            await AuthenticationStateProvider.MarkUserAsLoggedOut();
+            Navigation.NavigateTo("/login", true);
+        }
     }
-   }
+}

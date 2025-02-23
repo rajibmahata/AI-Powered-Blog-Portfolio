@@ -40,7 +40,7 @@
                     <label for="rememberMe" class="form-check-label">Remember Me</label>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-block">Login</button>
+                <button type="submit" class="btn btn-primary btn-block" disabled="@isLoading">Login</button>
             </EditForm>
 
             @if (loginFailed)
@@ -51,6 +51,21 @@
     </div>
 </div>
 
+@if (isLoading)
+{
+    <div class="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <div class="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+
 @code {
     [SupplyParameterFromForm]
     private AdminLoginRequest loginModel { get; set; } = new AdminLoginRequest();
@@ -58,6 +73,7 @@
     private bool isDisposed = false;
     private bool shouldStoreToken = false;
     private bool _hasRendered = false;
+    private bool isLoading = false;
     private AdminLoginResponse adminLoginResponse { get; set; } = new AdminLoginResponse();
 
     protected override void OnInitialized()
@@ -76,6 +92,7 @@
 
     private async Task HandleLogin()
     {
+        isLoading = true;
         try
         {
             Console.WriteLine("HandleLogin called");
@@ -85,12 +102,12 @@
             if (isAuthenticated)
             {
                 Console.WriteLine("Login successful. Storing token...");
-              
+
                 if (_hasRendered) // Ensure JavaScript interop is available
                 {
                     await LocalStorageHelper.SetItemAsync("authToken", adminLoginResponse.Token);
                 }
-               
+
                 await ((CustomAuthenticationStateProvider)AuthenticationStateProvider)
                     .MarkUserAsAuthenticated(adminLoginResponse.Token);
 
@@ -107,6 +124,10 @@
             Console.WriteLine($"Exception: {ex.Message}");
             loginFailed = true;
         }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private async Task<bool> AuthenticateUser(AdminLoginRequest loginModel)
@@ -119,7 +140,7 @@
                 Console.WriteLine("Invalid login response: Token is empty.");
                 return false;
             }
-         
+
             return true;
         }
         catch (Exception ex)
@@ -137,3 +158,18 @@
         }
     }
 }
+
+<style>
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+</style>

@@ -36,6 +36,13 @@ namespace AIPoweredBlogPortfolio.Admin.Services
                     return _anonymousState; // No token → Not authenticated
                 }
 
+                var jwtToken = new JwtSecurityTokenHandler().ReadJwtToken(token);
+                if (jwtToken.ValidTo < DateTime.UtcNow.AddMinutes(-10))
+                {
+                    await MarkUserAsLoggedOut(); // Token expired → Log out
+                    return _anonymousState;
+                }
+
                 var user = GetUserFromJwtToken(token);
                 return new AuthenticationState(user);
             }

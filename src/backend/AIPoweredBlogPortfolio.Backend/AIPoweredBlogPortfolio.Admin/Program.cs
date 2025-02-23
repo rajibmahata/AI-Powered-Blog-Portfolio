@@ -30,6 +30,7 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddBlazoredLocalStorage();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<LocalStorageHelper>();
 
 builder.Services.AddHttpClient<AdminClient>(client =>

@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
 
 <div class="container-fluid">
     <AuthorizeView>
@@ -9,6 +10,7 @@
             </nav>
 
             <p>Hello, @context.User.Identity?.Name!</p>
+            <button class="btn btn-danger" type="button" @onclick="Logout">Log Out</button>
 
         </Authorized>
     </AuthorizeView>
@@ -38,3 +40,9 @@
     </div>
 </div>
 
+@code {
+    private void Logout()
+    {
+        Navigation.NavigateTo("/logout", true);
+    }
+}

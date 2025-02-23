@@ -1,68 +1,107 @@
 ﻿@using AIPoweredBlogPortfolio.Admin.Models
 @using System.Security.Cryptography
 @using System.Text
-<div class="modal-body">
-    <EditForm Model="@CurrentAdmin" OnValidSubmit="@HandleSubmit">
-        <DataAnnotationsValidator />
-        <div class="mb-3">
-            <label class="form-label">Username</label>
-            <InputText class="form-control" @bind-Value="CurrentAdmin.Username" />
-            <ValidationMessage For="@(() => CurrentAdmin.Username)" />
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Email</label>
-            <InputText class="form-control" @bind-Value="CurrentAdmin.Email" />
-            <ValidationMessage For="@(() => CurrentAdmin.Email)" />
-        </div>
-        @if (IsNew)
-        {
-            <div class="mb-3">
-                <label class="form-label">Password</label>
-                <InputText type="password" class="form-control" @bind-Value="password" />
+@using Microsoft.AspNetCore.Components.Forms
+
+<div class="modal-backdrop @(ShowModal ? "show" : "")"></div>
+
+<div class="modal @(ShowModal ? "show d-block" : "")" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@(IsNew ? "Add New Admin" : "Edit Admin")</h5>
+                <button type="button" class="btn-close" @onclick="OnClose"></button>
             </div>
-        }
-        <button type="submit" class="btn btn-primary">Save</button>
-    </EditForm>
+            <div class="modal-body">
+                <EditForm Model="@CurrentAdmin" OnValidSubmit="@HandleSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <InputText class="form-control" @bind-Value="CurrentAdmin.Username" />
+                        <ValidationMessage For="@(() => CurrentAdmin.Username)" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <InputText class="form-control" @bind-Value="CurrentAdmin.Email" />
+                        <ValidationMessage For="@(() => CurrentAdmin.Email)" />
+                    </div>
+                   @*  @if (IsNew)
+                    { *@
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <InputText type="password" class="form-control" @bind-Value="CurrentAdmin.Password" />
+                            <ValidationMessage For="@(() => CurrentAdmin.Password)" />
+                        </div>
+                    @* } *@
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
 </div>
 
 @code {
     [Parameter] public bool ShowModal { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
-    [Parameter] public EventCallback<AdminViewModel> OnSave { get; set; }
+    [Parameter] public EventCallback<AdminRegisterRequest> OnSave { get; set; }
     [Parameter] public bool IsNew { get; set; }
-    [Parameter] public AdminViewModel SelectedAdmin { get; set; }
+    [Parameter] public AdminRegisterRequest SelectedAdmin { get; set; }
 
-    private AdminViewModel CurrentAdmin = new();
+    private AdminRegisterRequest CurrentAdmin = new();
     private string password = string.Empty;
 
     protected override void OnParametersSet()
     {
         if (!IsNew && SelectedAdmin != null)
         {
-            CurrentAdmin = new AdminViewModel
+            CurrentAdmin = new AdminRegisterRequest
                 {
                     AdminId = SelectedAdmin.AdminId,
                     Username = SelectedAdmin.Username,
                     Email = SelectedAdmin.Email
+                    
                 };
         }
         else
         {
-            CurrentAdmin = new AdminViewModel();
+            CurrentAdmin = new AdminRegisterRequest();
         }
     }
 
     private async Task HandleSubmit()
     {
-        if (IsNew)
-        {
-            using (var hmac = new HMACSHA512())
-            {
-                var salt = hmac.Key;
-                var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
-                CurrentAdmin.Password = Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
-            }
-        }
+        // if (IsNew)
+        // {
+        //     using (var hmac = new HMACSHA512())
+        //     {
+        //         var salt = hmac.Key;
+        //         var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+        //         CurrentAdmin.Password = Convert.ToBase64String(salt) + ":" + Convert.ToBase64String(hash);
+        //     }
+        // }
         await OnSave.InvokeAsync(CurrentAdmin);
     }
 }
+
+
+<style>
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1040;
+        display: none;
+    }
+
+        .modal-backdrop.show {
+            display: block;
+        }
+
+    .modal.show {
+        display: block;
+    }
+</style>
