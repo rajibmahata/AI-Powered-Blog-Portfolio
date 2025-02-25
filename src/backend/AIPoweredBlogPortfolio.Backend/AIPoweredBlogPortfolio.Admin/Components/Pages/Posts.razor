@@ -1,4 +1,57 @@
-﻿<h3>Posts</h3>
+﻿@page "/posts"
+@using AIPoweredBlogPortfolio.Admin.Models
+@using AIPoweredBlogPortfolio.Admin.Services
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@inject LocalStorageHelper localStorageHelper
+@inject AdminClient AdminClient
+
+<h3>Admin User Management</h3>
+<button class="btn btn-primary mb-3" @onclick="ShowAddModal">Add New Admin</button>
+@if (admins == null)
+{
+    <div class="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var admin in admins)
+            {
+                <tr>
+                    <td>@admin.Username</td>
+                    <td>@admin.Email</td>
+                    <td>@admin.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" @onclick="() => ShowEditModal(admin)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteAdmin(admin)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (isLoading)
+{
+    <div class="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
 
 @code {
 
