@@ -30,18 +30,35 @@ namespace AIPoweredBlogPortfolio.Admin.Services
 
         public async Task<AdminLoginResponse> LoginAsync(AdminLoginRequest loginRequest)
         {
+            AdminLoginResponse adminLoginResponse = new AdminLoginResponse();
             try
             {
                 var response = await _httpClient.PostAsJsonAsync("api/admin/login", loginRequest);
                 response.EnsureSuccessStatusCode();
-                var result = await response.Content.ReadFromJsonAsync<AdminLoginResponse>();
-                return result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var loginResponse = await response.Content.ReadFromJsonAsync<AdminLoginResponse>();
+                    if (loginResponse != null)
+                    {
+                        adminLoginResponse = loginResponse;
+                        adminLoginResponse.isSuccss = true;
+                    }
+                    else
+                    {
+                        adminLoginResponse.isSuccss = false;
+                    }
+                }
+                else
+                {
+                    adminLoginResponse.isSuccss = false;
+                }
             }
             catch (Exception ex)
             {
+                adminLoginResponse.isSuccss = false;
                 _logger.LogError(ex, "Error occurred while logging in.");
-                throw;
             }
+            return adminLoginResponse;
         }
 
         public async Task<IEnumerable<AdminViewModel>> GetAllAdminsAsync(string token)

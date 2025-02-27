@@ -37,7 +37,7 @@ namespace AIPoweredBlogPortfolio.API.Controllers
                 return BadRequest(new { message = "Username or password is incorrect" });
 
             var token = GenerateJwtToken(admin);
-            return Ok(new { token });
+            return Ok(new { AdminId = admin.AdminId, token=token });
         }
 
         [Authorize(Policy = "Admin")]

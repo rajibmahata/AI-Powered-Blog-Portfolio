@@ -1,0 +1,62 @@
+﻿@using AIPoweredBlogPortfolio.Admin.Models
+@code {
+    [Parameter] public bool ShowModal { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<BlogPostRequest> OnSave { get; set; }
+    [Parameter] public bool IsNew { get; set; }
+    [Parameter] public BlogPostRequest SelectedPost { get; set; } = new BlogPostRequest();
+
+    private async Task Save()
+    {
+        await OnSave.InvokeAsync(SelectedPost);
+    }
+
+    private void Close()
+    {
+        OnClose.InvokeAsync();
+    }
+}
+
+<div class="modal @(ShowModal ? "show" : "")" tabindex="-1" style="display: @(ShowModal ? "block" : "none")">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">@((IsNew ? "Add" : "Edit") + " Blog Post")</h5>
+                <button type="button" class="btn-close" @onclick="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" @bind="SelectedPost.Title">
+                </div>
+                <div class="mb-3">
+                    <label for="contentHtml" class="form-label">Content HTML</label>
+                    <textarea class="form-control" id="contentHtml" @bind="SelectedPost.ContentHtml"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="rawContent" class="form-label">Raw Content</label>
+                    <textarea class="form-control" id="rawContent" @bind="SelectedPost.RawContent"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="tags" class="form-label">Tags</label>
+                    <input type="text" class="form-control" id="tags" @bind="SelectedPost.Tags">
+                </div>
+                <div class="mb-3">
+                    <label for="metaDescription" class="form-label">Meta Description</label>
+                    <input type="text" class="form-control" id="metaDescription" @bind="SelectedPost.MetaDescription">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" @onclick="Close">Close</button>
+                <button type="button" class="btn btn-primary" @onclick="Save">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .modal.show {
+        display: block;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+</style>

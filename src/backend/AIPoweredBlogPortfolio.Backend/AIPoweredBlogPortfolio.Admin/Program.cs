@@ -37,6 +37,10 @@ builder.Services.AddHttpClient<AdminClient>(client =>
 {
     client.BaseAddress = new Uri("https://localhost:7133");
 });
+builder.Services.AddHttpClient<BlogPostClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["values:ApiBaseUrl"]);
+});
 
 var app = builder.Build();
 

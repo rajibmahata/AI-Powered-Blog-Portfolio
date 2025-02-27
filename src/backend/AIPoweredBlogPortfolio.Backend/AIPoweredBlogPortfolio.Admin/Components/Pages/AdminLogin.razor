@@ -97,15 +97,16 @@
         {
             Console.WriteLine("HandleLogin called");
 
-            var isAuthenticated = await AuthenticateUser(loginModel);
+            adminLoginResponse = await AdminClient.LoginAsync(loginModel);
 
-            if (isAuthenticated)
+            if (adminLoginResponse.isSuccss)
             {
                 Console.WriteLine("Login successful. Storing token...");
 
                 if (_hasRendered) // Ensure JavaScript interop is available
                 {
                     await LocalStorageHelper.SetItemAsync("authToken", adminLoginResponse.Token);
+                    await LocalStorageHelper.SetItemAsync("AdminIdValue", adminLoginResponse.AdminId);
                 }
 
                 await ((CustomAuthenticationStateProvider)AuthenticationStateProvider)
@@ -130,25 +131,7 @@
         }
     }
 
-    private async Task<bool> AuthenticateUser(AdminLoginRequest loginModel)
-    {
-        try
-        {
-            adminLoginResponse = await AdminClient.LoginAsync(loginModel);
-            if (string.IsNullOrWhiteSpace(adminLoginResponse?.Token))
-            {
-                Console.WriteLine("Invalid login response: Token is empty.");
-                return false;
-            }
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Exception: {ex.Message}");
-            return false;
-        }
-    }
+    
 
     public void Dispose()
     {

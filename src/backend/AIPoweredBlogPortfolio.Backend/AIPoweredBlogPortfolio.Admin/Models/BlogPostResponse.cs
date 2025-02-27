@@ -1,20 +1,15 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace AIPoweredBlogPortfolio.Admin.Models
+﻿namespace AIPoweredBlogPortfolio.Admin.Models
 {
-    public class BlogPostRequest
+    public class BlogPostResponse
     {
-        [Required]
         public int PostId { get; set; }
-        [Required]
         public string Title { get; set; }
-        [Required]
         public string ContentHtml { get; set; }
-        [Required]
         public string RawContent { get; set; }
         public string Tags { get; set; }
         public string MetaDescription { get; set; }
-        [Required]
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
         public int AdminId { get; set; }
     }
 }

@@ -1,7 +1,12 @@
-﻿@page "/posts/edit"
+﻿@page "/posts/edit/{PostId:int?}"
 @using AIPoweredBlogPortfolio.Admin.Models
-@using Microsoft.AspNetCore.Authorization
-@* @attribute [Authorize(Roles = "Admin,Editor")] *@
+@using AIPoweredBlogPortfolio.Admin.Services
+@inject NavigationManager Navigation
+@inject BlogPostClient BlogPostClient
+@inject LocalStorageHelper localStorageHelper
+@inject IJSRuntime JSRuntime
+@inject ILogger<EditPost> Logger
+@using Blazored.TextEditor
 
 <div class="card">
     <div class="card-header">
@@ -23,7 +28,42 @@
 
                     <div class="mb-3">
                         <label class="form-label">Content</label>
-                        <InputTextArea class="form-control" rows="10" @bind-Value="BlogPost.RawContent" />
+                        <BlazoredTextEditor @ref="textEditor" >
+                            <ToolbarContent>
+                                <select class="ql-header">
+                                    <option selected=""></option>
+                                    <option value="1"></option>
+                                    <option value="2"></option>
+                                    <option value="3"></option>
+                                    <option value="4"></option>
+                                    <option value="5"></option>
+                                </select>
+                                <span class="ql-formats">
+                                    <button class="ql-bold"></button>
+                                    <button class="ql-italic"></button>
+                                    <button class="ql-underline"></button>
+                                    <button class="ql-strike"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <select class="ql-color"></select>
+                                    <select class="ql-background"></select>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-list" value="ordered"></button>
+                                    <button class="ql-list" value="bullet"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-link"></button>
+                                    <button class="ql-image"></button>
+                                </span>
+                            </ToolbarContent>
+                            <EditorContent>
+                                <h4>This Toolbar works with HTML</h4>
+                                <a href="http://BlazorHelpWebsite.com">
+                                    BlazorHelpWebsite.com
+                                </a>
+                            </EditorContent>
+                            </BlazoredTextEditor>
                         <button class="btn btn-link" @onclick="RefineContent">
                             <i class="bi bi-spellcheck"></i> AI Refine
                         </button>
@@ -58,29 +98,94 @@
 </div>
 
 @code {
+    [Parameter] public int? PostId { get; set; }
     private BlogPostRequest BlogPost { get; set; } = new();
     private List<string> SeoKeywords = new();
+    private string token;
+    private BlazoredTextEditor textEditor;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Console.WriteLine("OnAfterRenderAsync triggered");
+            token = await localStorageHelper.GetItemAsync<string>("authToken");
+            if (PostId.HasValue)
+            {
+                await LoadBlogPost(PostId.Value);
+            }
+            StateHasChanged(); // Trigger re-render
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // token = await localStorageHelper.GetItemAsync<string>("authToken");
+        // if (PostId.HasValue)
+        // {
+        //     await LoadBlogPost(PostId.Value);
+        // }
+    }
+
+    private async Task LoadBlogPost(int postId)
+    {
+        try
+        {
+            var post = await BlogPostClient.GetBlogPostAsync(postId, token);
+            BlogPost = new BlogPostRequest
+                {
+                    PostId = post.PostId,
+                    Title = post.Title,
+                    ContentHtml = post.ContentHtml,
+                    RawContent = post.RawContent,
+                    Tags = post.Tags,
+                    MetaDescription = post.MetaDescription,
+                    AdminId = post.AdminId
+                };
+            await textEditor.LoadHTMLContent(BlogPost.ContentHtml);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading blog post");
+        }
+    }
 
     private async Task GenerateTitle()
     {
         // Call AI service to generate title
-       // BlogPost.Title = await AiService.GenerateTitle(BlogPost.Content);
+        // BlogPost.Title = await AiService.GenerateTitle(BlogPost.Content);
     }
 
     private async Task RefineContent()
     {
         // Call AI service to refine content
-      //  BlogPost.Content = await AiService.RefineContent(BlogPost.Content);
+        // BlogPost.Content = await AiService.RefineContent(BlogPost.Content);
     }
 
     private async Task GenerateSeoKeywords()
     {
         // Call AI service to generate SEO keywords
-     //   SeoKeywords = await AiService.GenerateSeoKeywords(BlogPost.Content);
+        // SeoKeywords = await AiService.GenerateSeoKeywords(BlogPost.Content);
     }
 
-    private void SavePost()
+    private async Task SavePost()
     {
-        // Save post logic
+        try
+        {
+            BlogPost.ContentHtml = await textEditor.GetHTML();
+            if (PostId.HasValue)
+            {
+                await BlogPostClient.UpdateBlogPostAsync(BlogPost.PostId, BlogPost, token);
+            }
+            else
+            {
+                await BlogPostClient.CreateBlogPostAsync(BlogPost, token);
+            }
+            Navigation.NavigateTo("/posts");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error saving blog post");
+        }
     }
 }
