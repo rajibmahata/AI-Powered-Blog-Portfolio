@@ -105,12 +105,12 @@
 
                 if (_hasRendered) // Ensure JavaScript interop is available
                 {
-                    await LocalStorageHelper.SetItemAsync("authToken", adminLoginResponse.Token);
-                    await LocalStorageHelper.SetItemAsync("AdminIdValue", adminLoginResponse.AdminId);
+                    await LocalStorageHelper.SetItemAsync("authToken", adminLoginResponse.token);
+                    await LocalStorageHelper.SetItemAsync("AdminIdValue", adminLoginResponse.adminId);
                 }
 
                 await ((CustomAuthenticationStateProvider)AuthenticationStateProvider)
-                    .MarkUserAsAuthenticated(adminLoginResponse.Token);
+                    .MarkUserAsAuthenticated(adminLoginResponse.token);
 
                 Console.WriteLine("Navigating to home page");
                 Navigation.NavigateTo("/", true);

@@ -1,0 +1,19 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Routing
+
+@code {
+    [Parameter] public string CurrentPage { get; set; }
+    [Parameter] public Dictionary<string, string> BreadcrumbItems { get; set; } = new Dictionary<string, string>();
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        @foreach (var item in BreadcrumbItems)
+        {
+            <li class="breadcrumb-item">
+                <NavLink href="@item.Key">@item.Value</NavLink>
+            </li>
+        }
+        <li class="breadcrumb-item active" aria-current="page">@CurrentPage</li>
+    </ol>
+</nav>

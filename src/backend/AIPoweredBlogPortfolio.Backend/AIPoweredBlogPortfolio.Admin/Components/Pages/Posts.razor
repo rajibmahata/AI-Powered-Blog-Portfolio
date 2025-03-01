@@ -6,6 +6,8 @@
 @inject LocalStorageHelper localStorageHelper
 @inject BlogPostClient BlogPostClient
 
+<Breadcrumb CurrentPage="Manage Posts" BreadcrumbItems="new Dictionary<string, string> { { "/", "Home" } }" />
+
 <h3>Blog Post Management</h3>
 <button class="btn btn-primary mb-3" @onclick="() => NavigateToEditPost(null)">Add New Post</button>
 

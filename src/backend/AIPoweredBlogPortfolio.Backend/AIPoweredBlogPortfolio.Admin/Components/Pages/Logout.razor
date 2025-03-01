@@ -14,6 +14,7 @@
             await AuthenticationStateProvider.InitializeAsync(); // Notify Blazor that authentication state is ready
             await AuthenticationStateProvider.MarkUserAsLoggedOut();
             StateHasChanged(); // Trigger re-render
+            Navigation.NavigateTo("/login", true);
         }
     }
 
@@ -21,7 +22,6 @@
     {
         if (_hasRendered)
         {
-            await AuthenticationStateProvider.MarkUserAsLoggedOut();
             Navigation.NavigateTo("/login", true);
         }
     }
