@@ -5,11 +5,11 @@ namespace AIPoweredBlogPortfolio.API.Models
     public class BlogPostRequest
     {
         [Required]
-        public string Title { get; set; }
+        public required string Title { get; set; }
         [Required]
-        public string ContentHtml { get; set; }
+        public required string ContentHtml { get; set; }
         [Required]
-        public string RawContent { get; set; }
+        public required string RawContent { get; set; }
         public string Tags { get; set; }
         public string MetaDescription { get; set; }
         [Required]

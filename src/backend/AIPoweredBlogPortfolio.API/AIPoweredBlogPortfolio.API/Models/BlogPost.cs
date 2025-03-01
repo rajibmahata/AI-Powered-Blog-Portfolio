@@ -8,11 +8,11 @@ namespace AIPoweredBlogPortfolio.API.Models
         [Key]
         public int PostId { get; set; }
         [Required]
-        public string Title { get; set; }
+        public required string Title { get; set; }
         [Required]
-        public string ContentHtml { get; set; }
+        public required string ContentHtml { get; set; }
         [Required]
-        public string RawContent { get; set; }
+        public required string RawContent { get; set; }
         public string Tags { get; set; }
         public string MetaDescription { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

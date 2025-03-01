@@ -66,6 +66,11 @@ namespace AIPoweredBlogPortfolio.API.Controllers
         [SwaggerRequestExample(typeof(BlogPostRequest), typeof(BlogPostRequestExample))]
         public async Task<ActionResult<BlogPostResponse>> PostBlogPost(BlogPostRequest blogPostRequest)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var blogPost = new BlogPost
             {
                 Title = blogPostRequest.Title,

@@ -1,4 +1,5 @@
 ﻿@page "/users"
+@using AIPoweredBlogPortfolio.Admin.Components.Layout
 @using AIPoweredBlogPortfolio.Admin.Models
 @using AIPoweredBlogPortfolio.Admin.Services
 @inject NavigationManager Navigation
@@ -6,7 +7,7 @@
 @inject LocalStorageHelper localStorageHelper
 @inject AdminClient AdminClient
 
-<Breadcrumb CurrentPage="User" BreadcrumbItems="new Dictionary<string, string> { { "/", "Home" } }" />
+<Breadcrumb CurrentPage="User" BreadcrumbItems="@(new Dictionary<string, string> { { "/", "Home" } })" />
 
 <h3>Admin User Management</h3>
 <button class="btn btn-primary mb-3" @onclick="ShowAddModal">Add New Admin</button>
