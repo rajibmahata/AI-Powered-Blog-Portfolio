@@ -3,12 +3,6 @@ using AIPoweredBlogPortfolio.Admin.Services;
 using Blazored.LocalStorage;
 using System.Net.Http.Headers;
 
-Here is the updated `BlogPostClient` class with logs for status code and errors for non-200 responses:
-
-```csharp
-using AIPoweredBlogPortfolio.Admin.Models;
-using Blazored.LocalStorage;
-using System.Net.Http.Headers;
 
 namespace AIPoweredBlogPortfolio.Admin.Services
 {
