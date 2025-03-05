@@ -1,6 +1,6 @@
 ﻿namespace AIPoweredBlogPortfolio.Admin.Models
 {
-    public class BlogPostResponse
+    public class BlogPostResponse : BaseResponse
     {
         public int PostId { get; set; }
         public string Title { get; set; }

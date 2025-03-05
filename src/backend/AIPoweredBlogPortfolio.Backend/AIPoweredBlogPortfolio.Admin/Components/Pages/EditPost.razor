@@ -196,7 +196,7 @@
         try
         {
             BlogPost.ContentHtml = JsonConvert.SerializeObject(await textEditor.GetHTML());
-            BlogPost.RawContent = await textEditor.GetContent();
+            BlogPost.RawContent = await textEditor.GetText();
             BlogPost.AdminId = AdminId;
             if (PostId.HasValue)
             {

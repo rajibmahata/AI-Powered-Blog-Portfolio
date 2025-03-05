@@ -1,4 +1,12 @@
 ﻿using AIPoweredBlogPortfolio.Admin.Models;
+using AIPoweredBlogPortfolio.Admin.Services;
+using Blazored.LocalStorage;
+using System.Net.Http.Headers;
+
+Here is the updated `BlogPostClient` class with logs for status code and errors for non-200 responses:
+
+```csharp
+using AIPoweredBlogPortfolio.Admin.Models;
 using Blazored.LocalStorage;
 using System.Net.Http.Headers;
 
@@ -31,8 +39,16 @@ namespace AIPoweredBlogPortfolio.Admin.Services
             {
                 await AddJwtTokenAsync(token);
                 var response = await _httpClient.GetAsync("api/BlogPosts");
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<IEnumerable<BlogPostResponse>>();
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Successfully retrieved blog posts.");
+                    return await response.Content.ReadFromJsonAsync<IEnumerable<BlogPostResponse>>();
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to retrieve blog posts. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+                    response.EnsureSuccessStatusCode();
+                }
             }
             catch (Exception ex)
             {
@@ -47,8 +63,16 @@ namespace AIPoweredBlogPortfolio.Admin.Services
             {
                 await AddJwtTokenAsync(token);
                 var response = await _httpClient.GetAsync($"api/BlogPosts/{id}");
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<BlogPostResponse>();
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation($"Successfully retrieved blog post with ID: {id}.");
+                    return await response.Content.ReadFromJsonAsync<BlogPostResponse>();
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to retrieve blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+                    response.EnsureSuccessStatusCode();
+                }
             }
             catch (Exception ex)
             {
@@ -63,8 +87,16 @@ namespace AIPoweredBlogPortfolio.Admin.Services
             {
                 await AddJwtTokenAsync(token);
                 var response = await _httpClient.PostAsJsonAsync("api/BlogPosts", blogPostRequest);
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadFromJsonAsync<BlogPostResponse>();
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Successfully created a blog post.");
+                    return await response.Content.ReadFromJsonAsync<BlogPostResponse>();
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to create blog post. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+                    response.EnsureSuccessStatusCode();
+                }
             }
             catch (Exception ex)
             {
@@ -79,7 +111,15 @@ namespace AIPoweredBlogPortfolio.Admin.Services
             {
                 await AddJwtTokenAsync(token);
                 var response = await _httpClient.PutAsJsonAsync($"api/BlogPosts/{id}", blogPostRequest);
-                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation($"Successfully updated blog post with ID: {id}.");
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to update blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+                    response.EnsureSuccessStatusCode();
+                }
             }
             catch (Exception ex)
             {
@@ -94,7 +134,15 @@ namespace AIPoweredBlogPortfolio.Admin.Services
             {
                 await AddJwtTokenAsync(token);
                 var response = await _httpClient.DeleteAsync($"api/BlogPosts/{id}");
-                response.EnsureSuccessStatusCode();
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation($"Successfully deleted blog post with ID: {id}.");
+                }
+                else
+                {
+                    _logger.LogWarning($"Failed to delete blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
+                    response.EnsureSuccessStatusCode();
+                }
             }
             catch (Exception ex)
             {
@@ -104,3 +152,6 @@ namespace AIPoweredBlogPortfolio.Admin.Services
         }
     }
 }
+```
+
+This updated code logs status codes and includes the reason phrase for non-200 responses.
