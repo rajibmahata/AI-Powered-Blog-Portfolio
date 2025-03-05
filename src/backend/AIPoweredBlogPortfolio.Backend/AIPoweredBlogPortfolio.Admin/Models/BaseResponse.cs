@@ -3,5 +3,6 @@
     public class BaseResponse
     {
         public bool isSuccss { get; set; }
+        public string Message { get; set; }
     }
 }

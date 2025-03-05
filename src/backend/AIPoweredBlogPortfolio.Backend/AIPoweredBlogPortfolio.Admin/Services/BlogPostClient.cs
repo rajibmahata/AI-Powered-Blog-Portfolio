@@ -1,7 +1,7 @@
-﻿using AIPoweredBlogPortfolio.Admin.Models;
-using AIPoweredBlogPortfolio.Admin.Services;
+﻿using AIPoweredBlogPortfolio.Admin.Services;
 using Blazored.LocalStorage;
 using System.Net.Http.Headers;
+using AIPoweredBlogPortfolio.Admin.Models;
 
 
 namespace AIPoweredBlogPortfolio.Admin.Services
@@ -31,48 +31,69 @@ namespace AIPoweredBlogPortfolio.Admin.Services
         {
             try
             {
+                List<BlogPostResponse> blogPosts = new  List<BlogPostResponse>();
                 await AddJwtTokenAsync(token);
                 var response = await _httpClient.GetAsync("api/BlogPosts");
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation("Successfully retrieved blog posts.");
-                    return await response.Content.ReadFromJsonAsync<IEnumerable<BlogPostResponse>>();
+                    var result = await response.Content.ReadFromJsonAsync<IEnumerable<BlogPostResponse>>();
+                    blogPosts = result.ToList();
+                   
                 }
                 else
                 {
-                    _logger.LogWarning($"Failed to retrieve blog posts. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
-                    response.EnsureSuccessStatusCode();
+                    var result = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Failed to retrieve blog posts. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase},  result: {result}");
+                    
                 }
+                return blogPosts;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred while getting blog posts.");
-                throw;
+                _logger.LogError(ex, $"Error occurred while getting blog posts. Message: {ex.Message}, InnerException: {ex.InnerException}");
+                throw ex;
             }
         }
 
         public async Task<BlogPostResponse> GetBlogPostAsync(int id, string token)
         {
+            BlogPostResponse blogPostResponse = new BlogPostResponse()
+            {
+                isSuccss = false
+            };
             try
             {
+              
                 await AddJwtTokenAsync(token);
                 var response = await _httpClient.GetAsync($"api/BlogPosts/{id}");
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation($"Successfully retrieved blog post with ID: {id}.");
-                    return await response.Content.ReadFromJsonAsync<BlogPostResponse>();
+                    blogPostResponse = await response.Content.ReadFromJsonAsync<BlogPostResponse>();
+                    blogPostResponse.isSuccss = true;
+                   
                 }
                 else
                 {
-                    _logger.LogWarning($"Failed to retrieve blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
-                    response.EnsureSuccessStatusCode();
+                    var result = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Failed to retrieve blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result:{result}");
+
+                    string Message = $"Failed to retrieve blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result:{result}";
+                    blogPostResponse.isSuccss = false;
+                    blogPostResponse.Message = Message;
                 }
+
+                return blogPostResponse;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error occurred while getting blog post by ID: {id}.");
-                throw;
+                blogPostResponse.isSuccss = false;
+                blogPostResponse.Message = ex.Message;
             }
+
+            return blogPostResponse;
         }
 
         public async Task<BlogPostResponse> CreateBlogPostAsync(BlogPostRequest blogPostRequest, string token)
@@ -84,22 +105,24 @@ namespace AIPoweredBlogPortfolio.Admin.Services
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation("Successfully created a blog post.");
-                    return await response.Content.ReadFromJsonAsync<BlogPostResponse>();
+                    var result = await response.Content.ReadFromJsonAsync<BlogPostResponse>();
+                    result.IsSuccess = true;
+                    return result;
                 }
                 else
                 {
                     _logger.LogWarning($"Failed to create blog post. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
-                    response.EnsureSuccessStatusCode();
+                    return new BlogPostResponse { IsSuccess = false, Message = $"Failed to create blog post. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}" };
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while creating blog post.");
-                throw;
+                return new BlogPostResponse { IsSuccess = false, Message = ex.Message };
             }
         }
 
-        public async Task UpdateBlogPostAsync(int id, BlogPostRequest blogPostRequest, string token)
+        public async Task<BlogPostResponse> UpdateBlogPostAsync(int id, BlogPostRequest blogPostRequest, string token)
         {
             try
             {
@@ -108,21 +131,22 @@ namespace AIPoweredBlogPortfolio.Admin.Services
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation($"Successfully updated blog post with ID: {id}.");
+                    return new BlogPostResponse { IsSuccess = true };
                 }
                 else
                 {
                     _logger.LogWarning($"Failed to update blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
-                    response.EnsureSuccessStatusCode();
+                    return new BlogPostResponse { IsSuccess = false, Message = $"Failed to update blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}" };
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error occurred while updating blog post with ID: {id}.");
-                throw;
+                return new BlogPostResponse { IsSuccess = false, Message = ex.Message };
             }
         }
 
-        public async Task DeleteBlogPostAsync(int id, string token)
+        public async Task<BlogPostResponse> DeleteBlogPostAsync(int id, string token)
         {
             try
             {
@@ -131,21 +155,19 @@ namespace AIPoweredBlogPortfolio.Admin.Services
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation($"Successfully deleted blog post with ID: {id}.");
+                    return new BlogPostResponse { IsSuccess = true };
                 }
                 else
                 {
                     _logger.LogWarning($"Failed to delete blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
-                    response.EnsureSuccessStatusCode();
+                    return new BlogPostResponse { IsSuccess = false, Message = $"Failed to delete blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}" };
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error occurred while deleting blog post with ID: {id}.");
-                throw;
+                return new BlogPostResponse { IsSuccess = false, Message = ex.Message };
             }
         }
     }
 }
-```
-
-This updated code logs status codes and includes the reason phrase for non-200 responses.
