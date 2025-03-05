@@ -77,6 +77,12 @@
                         <label class="form-label">Tags</label>
                         <InputText class="form-control" @bind-Value="BlogPost.Tags" placeholder="Enter tags separated by commas" />
                     </div>
+
+
+                    <div class="mb-3">
+                        <label class="form-label">MetaDescription</label>
+                        <InputText class="form-control" @bind-Value="BlogPost.MetaDescription" placeholder="Enter MetaDescription " />
+                    </div>
                 </div>
 
                 <div class="col-md-4">
@@ -142,9 +148,12 @@
             AdminId = await localStorageHelper.GetItemAsync<int>("AdminIdValue");
             if (PostId.HasValue)
             {
+                isLoading = true;
+                StateHasChanged(); // Trigger re-render to show loading overlay
                 await LoadBlogPost(PostId.Value);
+                isLoading = false;
+                StateHasChanged(); // Trigger re-render to hide loading overlay
             }
-            StateHasChanged(); // Trigger re-render
         }
     }
 

@@ -41,21 +41,21 @@ namespace AIPoweredBlogPortfolio.Admin.Services
                     if (loginResponse != null)
                     {
                         adminLoginResponse = loginResponse;
-                        adminLoginResponse.isSuccss = true;
+                        adminLoginResponse.isSuccess = true;
                     }
                     else
                     {
-                        adminLoginResponse.isSuccss = false;
+                        adminLoginResponse.isSuccess = false;
                     }
                 }
                 else
                 {
-                    adminLoginResponse.isSuccss = false;
+                    adminLoginResponse.isSuccess = false;
                 }
             }
             catch (Exception ex)
             {
-                adminLoginResponse.isSuccss = false;
+                adminLoginResponse.isSuccess = false;
                 _logger.LogError(ex, "Error occurred while logging in.");
             }
             return adminLoginResponse;

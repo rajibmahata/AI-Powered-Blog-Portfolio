@@ -1,5 +1,4 @@
-﻿using AIPoweredBlogPortfolio.Admin.Services;
-using Blazored.LocalStorage;
+﻿using Blazored.LocalStorage;
 using System.Net.Http.Headers;
 using AIPoweredBlogPortfolio.Admin.Models;
 
@@ -29,25 +28,23 @@ namespace AIPoweredBlogPortfolio.Admin.Services
 
         public async Task<IEnumerable<BlogPostResponse>> GetBlogPostsAsync(string token)
         {
+           
             try
             {
-                List<BlogPostResponse> blogPosts = new  List<BlogPostResponse>();
                 await AddJwtTokenAsync(token);
                 var response = await _httpClient.GetAsync("api/BlogPosts");
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation("Successfully retrieved blog posts.");
                     var result = await response.Content.ReadFromJsonAsync<IEnumerable<BlogPostResponse>>();
-                    blogPosts = result.ToList();
-                   
+                    return result;
                 }
                 else
                 {
                     var result = await response.Content.ReadAsStringAsync();
-                    _logger.LogWarning($"Failed to retrieve blog posts. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase},  result: {result}");
-                    
+                    _logger.LogWarning($"Failed to retrieve blog posts. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result: {result}");
+                   return null;
                 }
-                return blogPosts;
             }
             catch (Exception ex)
             {
@@ -58,38 +55,30 @@ namespace AIPoweredBlogPortfolio.Admin.Services
 
         public async Task<BlogPostResponse> GetBlogPostAsync(int id, string token)
         {
-            BlogPostResponse blogPostResponse = new BlogPostResponse()
+            BlogPostResponse blogPostResponse = new BlogPostResponse
             {
-                isSuccss = false
+                isSuccess = false
             };
             try
             {
-              
                 await AddJwtTokenAsync(token);
                 var response = await _httpClient.GetAsync($"api/BlogPosts/{id}");
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation($"Successfully retrieved blog post with ID: {id}.");
                     blogPostResponse = await response.Content.ReadFromJsonAsync<BlogPostResponse>();
-                    blogPostResponse.isSuccss = true;
-                   
+                    blogPostResponse.isSuccess = true;
                 }
                 else
                 {
                     var result = await response.Content.ReadAsStringAsync();
-                    _logger.LogWarning($"Failed to retrieve blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result:{result}");
-
-                    string Message = $"Failed to retrieve blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result:{result}";
-                    blogPostResponse.isSuccss = false;
-                    blogPostResponse.Message = Message;
+                    _logger.LogWarning($"Failed to retrieve blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result: {result}");
+                    blogPostResponse.Message = $"Failed to retrieve blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result: {result}";
                 }
-
-                return blogPostResponse;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error occurred while getting blog post by ID: {id}.");
-                blogPostResponse.isSuccss = false;
                 blogPostResponse.Message = ex.Message;
             }
 
@@ -98,6 +87,10 @@ namespace AIPoweredBlogPortfolio.Admin.Services
 
         public async Task<BlogPostResponse> CreateBlogPostAsync(BlogPostRequest blogPostRequest, string token)
         {
+            BlogPostResponse blogPostResponse = new BlogPostResponse
+            {
+                isSuccess = false
+            };
             try
             {
                 await AddJwtTokenAsync(token);
@@ -105,25 +98,31 @@ namespace AIPoweredBlogPortfolio.Admin.Services
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation("Successfully created a blog post.");
-                    var result = await response.Content.ReadFromJsonAsync<BlogPostResponse>();
-                    result.IsSuccess = true;
-                    return result;
+                    blogPostResponse = await response.Content.ReadFromJsonAsync<BlogPostResponse>();
+                    blogPostResponse.isSuccess = true;
                 }
                 else
                 {
-                    _logger.LogWarning($"Failed to create blog post. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
-                    return new BlogPostResponse { IsSuccess = false, Message = $"Failed to create blog post. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}" };
+                    var result = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Failed to create blog post. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result: {result}");
+                    blogPostResponse.Message = $"Failed to create blog post. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result: {result}";
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while creating blog post.");
-                return new BlogPostResponse { IsSuccess = false, Message = ex.Message };
+                blogPostResponse.Message = ex.Message;
             }
+
+            return blogPostResponse;
         }
 
         public async Task<BlogPostResponse> UpdateBlogPostAsync(int id, BlogPostRequest blogPostRequest, string token)
         {
+            BlogPostResponse blogPostResponse = new BlogPostResponse
+            {
+                isSuccess = false
+            };
             try
             {
                 await AddJwtTokenAsync(token);
@@ -131,23 +130,30 @@ namespace AIPoweredBlogPortfolio.Admin.Services
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation($"Successfully updated blog post with ID: {id}.");
-                    return new BlogPostResponse { IsSuccess = true };
+                    blogPostResponse.isSuccess = true;
                 }
                 else
                 {
-                    _logger.LogWarning($"Failed to update blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
-                    return new BlogPostResponse { IsSuccess = false, Message = $"Failed to update blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}" };
+                    var result = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Failed to update blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result: {result}");
+                    blogPostResponse.Message = $"Failed to update blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result: {result}";
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error occurred while updating blog post with ID: {id}.");
-                return new BlogPostResponse { IsSuccess = false, Message = ex.Message };
+                blogPostResponse.Message = ex.Message;
             }
+
+            return blogPostResponse;
         }
 
         public async Task<BlogPostResponse> DeleteBlogPostAsync(int id, string token)
         {
+            BlogPostResponse blogPostResponse = new BlogPostResponse
+            {
+                isSuccess = false
+            };
             try
             {
                 await AddJwtTokenAsync(token);
@@ -155,19 +161,22 @@ namespace AIPoweredBlogPortfolio.Admin.Services
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogInformation($"Successfully deleted blog post with ID: {id}.");
-                    return new BlogPostResponse { IsSuccess = true };
+                    blogPostResponse.isSuccess = true;
                 }
                 else
                 {
-                    _logger.LogWarning($"Failed to delete blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}");
-                    return new BlogPostResponse { IsSuccess = false, Message = $"Failed to delete blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}" };
+                    var result = await response.Content.ReadAsStringAsync();
+                    _logger.LogWarning($"Failed to delete blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result: {result}");
+                    blogPostResponse.Message = $"Failed to delete blog post with ID: {id}. Status code: {response.StatusCode}, Reason: {response.ReasonPhrase}, result: {result}";
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"Error occurred while deleting blog post with ID: {id}.");
-                return new BlogPostResponse { IsSuccess = false, Message = ex.Message };
+                blogPostResponse.Message = ex.Message;
             }
+
+            return blogPostResponse;
         }
     }
 }
