@@ -3,6 +3,7 @@ using AIPoweredBlogPortfolio.API.Services;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
+using System.Text.Json;
 
 namespace AIPoweredBlogPortfolio.API.Controllers
 {
@@ -24,11 +25,20 @@ namespace AIPoweredBlogPortfolio.API.Controllers
             var visitors = await _visitorService.GetAllVisitorsAsync();
             var response = visitors.Select(v => new VisitorResponse
             {
-                VisitorId = v.VisitorId,
-                Name = v.Name,
-                Email = v.Email,
-                Message = v.Message,
-                SubmittedAt = v.SubmittedAt
+                VisitorID = v.VisitorID,
+                IPAddress = v.IPAddress,
+                UserID = v.UserID,
+                UserAgent = v.UserAgent,
+                PageVisited = v.PageVisited,
+                VisitTimestamp = v.VisitTimestamp,
+                Country = v.Country,
+                City = v.City,
+                DeviceType = v.DeviceType,
+                Browser = v.Browser,
+                SessionID = v.SessionID,
+                ReferrerURL = v.ReferrerURL,
+                InterestsJson = v.InterestsJson,
+                TimeSpent = v.TimeSpent
             });
             return Ok(response);
         }
@@ -44,11 +54,20 @@ namespace AIPoweredBlogPortfolio.API.Controllers
             }
             var response = new VisitorResponse
             {
-                VisitorId = visitor.VisitorId,
-                Name = visitor.Name,
-                Email = visitor.Email,
-                Message = visitor.Message,
-                SubmittedAt = visitor.SubmittedAt
+                VisitorID = visitor.VisitorID,
+                IPAddress = visitor.IPAddress,
+                UserID = visitor.UserID,
+                UserAgent = visitor.UserAgent,
+                PageVisited = visitor.PageVisited,
+                VisitTimestamp = visitor.VisitTimestamp,
+                Country = visitor.Country,
+                City = visitor.City,
+                DeviceType = visitor.DeviceType,
+                Browser = visitor.Browser,
+                SessionID = visitor.SessionID,
+                ReferrerURL = visitor.ReferrerURL,
+                InterestsJson = visitor.InterestsJson,
+                TimeSpent = visitor.TimeSpent
             };
             return Ok(response);
         }
@@ -60,20 +79,39 @@ namespace AIPoweredBlogPortfolio.API.Controllers
         {
             var visitor = new Visitor
             {
-                Name = visitorRequest.Name,
-                Email = visitorRequest.Email,
-                Message = visitorRequest.Message
+                IPAddress = visitorRequest.IPAddress,
+                UserID = visitorRequest.UserID,
+                UserAgent = visitorRequest.UserAgent,
+                PageVisited = visitorRequest.PageVisited,
+                VisitTimestamp = visitorRequest.VisitTimestamp,
+                Country = visitorRequest.Country,
+                City = visitorRequest.City,
+                DeviceType = visitorRequest.DeviceType,
+                Browser = visitorRequest.Browser,
+                SessionID = visitorRequest.SessionID,
+                ReferrerURL = visitorRequest.ReferrerURL,
+                InterestsJson = visitorRequest.InterestsJson,
+                TimeSpent = visitorRequest.TimeSpent
             };
             await _visitorService.CreateVisitorAsync(visitor);
             var response = new VisitorResponse
             {
-                VisitorId = visitor.VisitorId,
-                Name = visitor.Name,
-                Email = visitor.Email,
-                Message = visitor.Message,
-                SubmittedAt = visitor.SubmittedAt
+                VisitorID = visitor.VisitorID,
+                IPAddress = visitor.IPAddress,
+                UserID = visitor.UserID,
+                UserAgent = visitor.UserAgent,
+                PageVisited = visitor.PageVisited,
+                VisitTimestamp = visitor.VisitTimestamp,
+                Country = visitor.Country,
+                City = visitor.City,
+                DeviceType = visitor.DeviceType,
+                Browser = visitor.Browser,
+                SessionID = visitor.SessionID,
+                ReferrerURL = visitor.ReferrerURL,
+                InterestsJson = visitor.InterestsJson,
+                TimeSpent = visitor.TimeSpent
             };
-            return CreatedAtAction("GetVisitor", new { id = visitor.VisitorId }, response);
+            return CreatedAtAction("GetVisitor", new { id = visitor.VisitorID }, response);
         }
 
         [HttpPut("{id}")]
@@ -83,10 +121,20 @@ namespace AIPoweredBlogPortfolio.API.Controllers
         {
             var visitor = new Visitor
             {
-                VisitorId = id,
-                Name = visitorRequest.Name,
-                Email = visitorRequest.Email,
-                Message = visitorRequest.Message
+                VisitorID = id,
+                IPAddress = visitorRequest.IPAddress,
+                UserID = visitorRequest.UserID,
+                UserAgent = visitorRequest.UserAgent,
+                PageVisited = visitorRequest.PageVisited,
+                VisitTimestamp = visitorRequest.VisitTimestamp,
+                Country = visitorRequest.Country,
+                City = visitorRequest.City,
+                DeviceType = visitorRequest.DeviceType,
+                Browser = visitorRequest.Browser,
+                SessionID = visitorRequest.SessionID,
+                ReferrerURL = visitorRequest.ReferrerURL,
+                InterestsJson = visitorRequest.InterestsJson,
+                TimeSpent = visitorRequest.TimeSpent
             };
             await _visitorService.UpdateVisitorAsync(visitor);
             return NoContent();
@@ -107,10 +155,21 @@ namespace AIPoweredBlogPortfolio.API.Controllers
         {
             return new VisitorRequest
             {
-                Name = "John Doe",
-                Email = "johndoe@example.com",
-                Message = "This is a sample message."
+                IPAddress = "192.168.1.1",
+                UserID = 1,
+                UserAgent = "Mozilla/5.0",
+                PageVisited = "/home",
+                VisitTimestamp = DateTime.UtcNow,
+                Country = "USA",
+                City = "New York",
+                DeviceType = DeviceType.Desktop,
+                Browser = "Chrome",
+                SessionID = "session123",
+                ReferrerURL = "http://example.com",
+                InterestsJson = "{\"interest1\":\"value1\"}",
+                TimeSpent = 120
             };
         }
     }
 }
+

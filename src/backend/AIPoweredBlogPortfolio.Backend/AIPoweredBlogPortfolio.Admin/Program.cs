@@ -33,6 +33,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStat
 builder.Services.AddScoped<CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<LocalStorageHelper>();
 builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<GeminiAIService>();
 
 builder.Services.AddHttpClient<AdminClient>(client =>
 {
@@ -42,6 +43,11 @@ builder.Services.AddHttpClient<BlogPostClient>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["values:ApiBaseUrl"]);
 });
+builder.Services.AddHttpClient<VisitorClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["values:ApiBaseUrl"]);
+});
+
 
 var app = builder.Build();
 
