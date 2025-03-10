@@ -17,12 +17,19 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 // Add builder.Services to the container.
+builder.Services.AddHttpsRedirection(options =>
+{
+    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+    options.HttpsPort = 443;
+});
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 builder.Services.Configure<ConfigValue>(builder.Configuration.GetSection("Settings"));
+
+builder.Services.AddLogging(configure => configure.AddConsole());
 
 builder.Services.AddControllers();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

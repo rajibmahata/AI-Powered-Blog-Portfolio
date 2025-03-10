@@ -77,11 +77,17 @@
                     <div class="mb-3">
                         <label class="form-label">Tags</label>
                         <InputText class="form-control" @bind-Value="BlogPost.Tags" placeholder="Enter tags separated by commas" />
+                        <button type="button" class="btn btn-outline-secondary" @onclick="GenerateTags">
+                            <i class="bi bi-magic"></i> AI Generate tags
+                        </button>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">MetaDescription</label>
                         <InputText class="form-control" @bind-Value="BlogPost.MetaDescription" placeholder="Enter MetaDescription " />
+                        <button type="button" class="btn btn-outline-secondary" @onclick="GenerateSeoKeywords">
+                            <i class="bi bi-magic"></i> AI Generate SeoKeywords
+                        </button>
                     </div>
                 </div>
 
@@ -227,7 +233,10 @@
         StateHasChanged(); // Trigger re-render to show loading overlay
         try
         {
-            var MetaDescription = (await AiService.GenerateSeoKeywordsAsync(BlogPost.ContentHtml)).ToList();
+            BlogPost.MetaDescription= await AiService.GenerateSeoKeywordsAsync(BlogPost.ContentHtml);
+            SeoKeywords = BlogPost.MetaDescription.Split(';', StringSplitOptions.RemoveEmptyEntries)
+               .Select(t => t.Trim())
+               .ToList();
         }
         catch (Exception ex)
         {
@@ -240,6 +249,25 @@
         }
     }
 
+    private async Task GenerateTags()
+    {
+        isLoading = true;
+        StateHasChanged(); // Trigger re-render to show loading overlay
+        try
+        {
+            BlogPost.Tags = await AiService.GenerateTagsAsync(BlogPost.ContentHtml);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error generating SEO keywords");
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged(); // Trigger re-render to hide loading overlay
+        }
+        
+    }
     private async Task SavePost()
     {
         isLoading = true;
