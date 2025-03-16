@@ -17,11 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 // Add builder.Services to the container.
-builder.Services.AddHttpsRedirection(options =>
-{
-    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
-    options.HttpsPort = 443;
-});
+
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -106,18 +102,28 @@ builder.Services.AddSwaggerExamplesFromAssemblyOf<AIProcessingLogRequestExample>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.MapOpenApi();
-    app.UseDeveloperExceptionPage();
-    // Enable middleware to serve generated Swagger as a JSON endpoint.
+
+    if (app.Environment.IsDevelopment()) 
+    {
+        app.UseDeveloperExceptionPage();
+    }
+
     app.UseSwagger();
-    // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-    // specifying the Swagger JSON endpoint.
+
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "AI-Powered Blog Portfolio API V1");
-        c.RoutePrefix = string.Empty;  // Set Swagger UI at the app's root
+        c.RoutePrefix = string.Empty;
+
+        // Restrict Swagger UI in production using basic authentication
+        if (app.Environment.IsProduction())
+        {
+            c.ConfigObject.AdditionalItems["persistAuthorization"] = "true"; // Allow session persistence
+        }
     });
 }
 

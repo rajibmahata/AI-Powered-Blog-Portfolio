@@ -37,7 +37,7 @@ builder.Services.AddScoped<GeminiAIService>();
 
 builder.Services.AddHttpClient<AdminClient>(client =>
 {
-    client.BaseAddress = new Uri("https://localhost:7133");
+    client.BaseAddress = new Uri(builder.Configuration["values:ApiBaseUrl"]);
 });
 builder.Services.AddHttpClient<BlogPostClient>(client =>
 {
